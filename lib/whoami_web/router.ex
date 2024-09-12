@@ -74,6 +74,8 @@ defmodule WhoamiWeb.Router do
   scope "/", WhoamiWeb do
     pipe_through [:browser]
 
+    get "/sso/:provider/authorize", SSOSessionController, :create
+
     delete "/users/log_out", UserSessionController, :delete
 
     live_session :current_user,

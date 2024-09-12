@@ -9,6 +9,7 @@ defmodule Whoami.Users.User do
     field :hashed_password, :string, redact: true
     field :current_password, :string, virtual: true, redact: true
     field :confirmed_at, :utc_datetime
+    has_many(:sso_identities, Whoami.Users.SSOIdentity)
 
     timestamps(type: :utc_datetime)
   end
@@ -43,7 +44,7 @@ defmodule Whoami.Users.User do
     |> validate_password(opts)
   end
 
-  defp validate_email(changeset, opts) do
+  def validate_email(changeset, opts) do
     changeset
     |> validate_required([:email])
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
