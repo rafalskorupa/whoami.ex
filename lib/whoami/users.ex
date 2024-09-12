@@ -126,6 +126,34 @@ defmodule Whoami.Users do
     Repo.one(query)
   end
 
+  def list_user_sso_identities(%User{id: user_id}) do
+    SSOIdentity
+    |> where(user_id: ^user_id)
+    |> Repo.all()
+  end
+
+  def create_user_sso_identity(user, identity) do
+    attrs = %{
+      external_id: identity.external_id,
+      provider: identity.provider,
+      external_name: identity.name,
+      access_token: identity.access_token
+    }
+
+    %SSOIdentity{user_id: user.id}
+    |> SSOIdentity.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def delete_user_sso_identity(user, identity_id) do
+    with %{} = identity <- Repo.get_by(SSOIdentity, user_id: user.id, id: identity_id),
+         :ok <- Whoami.SSO.delete_identity(identity.provider, identity) do
+      Repo.delete(identity)
+    else
+      nil -> :ok
+    end
+  end
+
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking user changes.
 

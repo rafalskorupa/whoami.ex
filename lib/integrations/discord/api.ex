@@ -5,7 +5,9 @@ defmodule Integrations.Discord.Api do
   require Logger
 
   @callback access_token(String.t()) :: {:ok, Token.t()} | {:error, :api_error}
-  @callback me(Token.t()) :: {:ok, User.t()} | {:error, :api_error}
+  @callback revoke_token(%{access_token: String.t()}) :: {:ok, any()} | {:error, :api_error}
+
+  @callback me(%{access_token: String.t()}) :: {:ok, User.t()} | {:error, :api_error}
 
   @spec authorize_url() :: String.t()
   def authorize_url() do
@@ -14,6 +16,9 @@ defmodule Integrations.Discord.Api do
 
   @spec access_token(String.t()) :: {:ok, Token.t()} | {:error, :api_error}
   def access_token(code), do: impl().access_token(code)
+
+  @spec revoke_token(any()) :: :ok | {:error, :api_error}
+  def revoke_token(token), do: impl().revoke_token(token)
 
   @spec me(Token.t()) :: {:ok, User.t()} | {:error, :api_error}
   def me(token), do: impl().me(token)
@@ -40,6 +45,24 @@ defmodule Integrations.Discord.Api do
       case Tesla.post(auth_client(), "/oauth2/token", data) do
         {:ok, %Tesla.Env{status: 200, body: body}} ->
           {:ok, Token.build!(body)}
+
+        env ->
+          Logger.warning("API Error: #{inspect(env)}")
+          {:error, :api_error}
+      end
+    end
+
+    @impl true
+    def revoke_token(token) do
+      data = %{
+        client_id: client_id(),
+        client_secret: client_secret(),
+        token: token.access_token
+      }
+
+      case Tesla.post(auth_client(), "/oauth2/token/revoke", data) do
+        {:ok, %Tesla.Env{status: 200}} ->
+          :ok
 
         env ->
           Logger.warning("API Error: #{inspect(env)}")
