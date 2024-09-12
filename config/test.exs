@@ -38,3 +38,12 @@ config :phoenix, :plug_init_mode, :runtime
 # Enable helpful, but potentially expensive runtime checks
 config :phoenix_live_view,
   enable_expensive_runtime_checks: true
+
+config :tesla, adapter: Tesla.Mock
+
+config :whoami, Integrations.Discord.Api,
+  client_id: "DISCORD_CLIENT_ID",
+  client_secret: "DISCORD_CLIENT_SECRET",
+  cdn: "https://discord.cdn",
+  redirect_uri: "https://whoami.skorupa.io/sso/discord/authorize",
+  authorize_url: "https://discord.com/oauth2/authorize"

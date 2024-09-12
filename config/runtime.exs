@@ -20,6 +20,15 @@ if System.get_env("PHX_SERVER") do
   config :whoami, WhoamiWeb.Endpoint, server: true
 end
 
+if config_env() != :test do
+  config :tqt, Integrations.Discord,
+    cdn: System.get_env("DISCORD_CDN"),
+    client_id: System.get_env("DISCORD_CLIENT_ID"),
+    client_secret: System.get_env("DISCORD_CLIENT_SECRET"),
+    redirect_uri: System.get_env("DISCORD_REDIRECT_URI"),
+    authorize_url: System.get_env("DISCORD_AUTHORIZE_URL")
+end
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
