@@ -6,7 +6,7 @@ defmodule Whoami.Users do
   import Ecto.Query, warn: false
   alias Whoami.Repo
 
-  alias Whoami.Users.{User, UserToken, UserNotifier}
+  alias Whoami.Users.{User, SSOIdentity, UserToken, UserNotifier}
 
   ## Database getters
 
@@ -78,6 +78,57 @@ defmodule Whoami.Users do
     %User{}
     |> User.registration_changeset(attrs)
     |> Repo.insert()
+  end
+
+  def register_user_with_identity(identity) do
+    attrs = %{
+      external_id: identity.external_id,
+      provider: identity.provider,
+      external_name: identity.name,
+      access_token: identity.access_token,
+      user: %{
+        email: identity.email
+      }
+    }
+
+    user = User.email_changeset(%User{}, %{email: identity.email})
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:user, user)
+    |> Ecto.Multi.insert(:identity, fn %{user: user} ->
+      %SSOIdentity{user_id: user.id}
+      |> SSOIdentity.changeset(attrs)
+      |> Repo.insert()
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{user: user}} ->
+        {:ok, user}
+
+      {:error, :user,
+       %Ecto.Changeset{
+         errors: [{:email, {"has already been taken", _}}]
+       }, %{}} ->
+        {:error, :email_already_taken}
+
+      error ->
+        IO.inspect(error)
+        {:error, :unexpected}
+    end
+  end
+
+  @doc """
+  # TODO(rafalskorupa)
+  """
+
+  def get_user_by_identity(%{provider: provider, external_id: external_id}) do
+    query =
+      from sso_identity in SSOIdentity,
+        join: user in assoc(sso_identity, :user),
+        where: sso_identity.external_id == ^external_id and sso_identity.provider == ^provider,
+        select: user
+
+    Repo.one(query)
   end
 
   @doc """

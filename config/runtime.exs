@@ -21,7 +21,7 @@ if System.get_env("PHX_SERVER") do
 end
 
 if config_env() != :test do
-  config :tqt, Integrations.Discord,
+  config :whoami, Integrations.Discord.Api,
     cdn: System.get_env("DISCORD_CDN"),
     client_id: System.get_env("DISCORD_CLIENT_ID"),
     client_secret: System.get_env("DISCORD_CLIENT_SECRET"),

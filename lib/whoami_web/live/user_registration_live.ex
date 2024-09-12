@@ -38,6 +38,11 @@ defmodule WhoamiWeb.UserRegistrationLive do
           <.button phx-disable-with="Creating account..." class="w-full">Create an account</.button>
         </:actions>
       </.simple_form>
+      <div>
+        <.link href={Integrations.Discord.Api.authorize_url()}>
+          Sign up with Discord
+        </.link>
+      </div>
     </div>
     """
   end

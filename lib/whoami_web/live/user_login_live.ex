@@ -31,6 +31,11 @@ defmodule WhoamiWeb.UserLoginLive do
           </.button>
         </:actions>
       </.simple_form>
+      <div>
+        <.link href={Integrations.Discord.Api.authorize_url()}>
+          Sign in with Discord
+        </.link>
+      </div>
     </div>
     """
   end
