@@ -43,7 +43,7 @@ defmodule WhoamiWeb do
         layouts: [html: WhoamiWeb.Layouts]
 
       import Plug.Conn
-      import WhoamiWeb.Gettext
+      use Gettext, backend: WhoamiWeb.Gettext
 
       unquote(verified_routes())
     end
@@ -85,7 +85,7 @@ defmodule WhoamiWeb do
       import Phoenix.HTML
       # Core UI components and translation
       import WhoamiWeb.CoreComponents
-      import WhoamiWeb.Gettext
+      use Gettext, backend: WhoamiWeb.Gettext
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS

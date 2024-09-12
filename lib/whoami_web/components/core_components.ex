@@ -17,7 +17,7 @@ defmodule WhoamiWeb.CoreComponents do
   use Phoenix.Component
 
   alias Phoenix.LiveView.JS
-  import WhoamiWeb.Gettext
+  use Gettext, backend: WhoamiWeb.Gettext
 
   @doc """
   Renders a modal.
