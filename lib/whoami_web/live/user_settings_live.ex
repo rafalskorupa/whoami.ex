@@ -69,6 +69,13 @@ defmodule WhoamiWeb.UserSettingsLive do
           </:actions>
         </.simple_form>
       </div>
+      <div>
+        <.header class="text-center">SSO Identities</.header>
+        <.table id="sso_identities" rows={@streams.identities}>
+          <:col :let={{_, identity}} label="Provider"><%= identity.provider %></:col>
+          <:col :let={{_, identity}} label="Provider Name"><%= identity.external_name %></:col>
+        </.table>
+      </div>
     </div>
     """
   end
@@ -94,6 +101,7 @@ defmodule WhoamiWeb.UserSettingsLive do
     socket =
       socket
       |> assign(:current_password, nil)
+      |> stream(:identities, Users.list_user_identites(user))
       |> assign(:email_form_current_password, nil)
       |> assign(:current_email, user.email)
       |> assign(:email_form, to_form(email_changeset))
