@@ -85,10 +85,7 @@ defmodule Whoami.Users do
       external_id: identity.external_id,
       provider: identity.provider,
       external_name: identity.name,
-      access_token: identity.access_token,
-      user: %{
-        email: identity.email
-      }
+      access_token: identity.access_token
     }
 
     user = User.email_changeset(%User{}, %{email: identity.email})
@@ -96,9 +93,7 @@ defmodule Whoami.Users do
     Ecto.Multi.new()
     |> Ecto.Multi.insert(:user, user)
     |> Ecto.Multi.insert(:identity, fn %{user: user} ->
-      %SSOIdentity{user_id: user.id}
-      |> SSOIdentity.changeset(attrs)
-      |> Repo.insert()
+      SSOIdentity.changeset(%SSOIdentity{user_id: user.id}, attrs)
     end)
     |> Repo.transaction()
     |> case do
