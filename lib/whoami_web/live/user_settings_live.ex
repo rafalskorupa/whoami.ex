@@ -69,8 +69,39 @@ defmodule WhoamiWeb.UserSettingsLive do
           </:actions>
         </.simple_form>
       </div>
+      <div>
+        <.header class="text-center">SSO Identities</.header>
+        <.table id="sso_identities" rows={Whoami.SSO.providers()}>
+          <:col :let={provider} label="Provider"><%= provider.name %></:col>
+          <:col :let={provider} label="Connected Account">
+            <%= Map.get(@identities, provider.key, %{external_name: nil}).external_name %>
+          </:col>
+          <:action :let={provider}>
+            <.link
+              :if={!Map.get(@identities, provider.key)}
+              href={Whoami.SSO.connect_link(provider, @current_user.id)}
+            >
+              Connect
+            </.link>
+            <.link
+              :if={Map.get(@identities, provider.key)}
+              phx-click="delete_identity"
+              phx-value-identity_id={Map.get(@identities, provider.key).id}
+              href="#"
+            >
+              Delete
+            </.link>
+          </:action>
+        </.table>
+
+        <div></div>
+      </div>
     </div>
     """
+  end
+
+  def identity_for_provider(identities, provider) do
+    Enum.find(identities, &(&1.provider == provider.key()))
   end
 
   def mount(%{"token" => token}, _session, socket) do
@@ -91,9 +122,12 @@ defmodule WhoamiWeb.UserSettingsLive do
     email_changeset = Users.change_user_email(user)
     password_changeset = Users.change_user_password(user)
 
+    identities = Map.new(Users.list_user_sso_identities(user), &{&1.provider, &1})
+
     socket =
       socket
       |> assign(:current_password, nil)
+      |> assign(:identities, identities)
       |> assign(:email_form_current_password, nil)
       |> assign(:current_email, user.email)
       |> assign(:email_form, to_form(email_changeset))
@@ -163,5 +197,19 @@ defmodule WhoamiWeb.UserSettingsLive do
       {:error, changeset} ->
         {:noreply, assign(socket, password_form: to_form(changeset))}
     end
+  end
+
+  def handle_event("delete_identity", %{"identity_id" => identity_id}, socket) do
+    user = socket.assigns.current_user
+
+    {:ok, identity} = Users.delete_user_sso_identity(user, identity_id)
+
+    {:noreply,
+     socket
+     |> assign(:identities, Map.delete(socket.assigns.identities, identity.provider))
+     |> put_flash(
+       :info,
+       "SSO identity was removed from application. Check with your provider to ensure permissions are revoked"
+     )}
   end
 end

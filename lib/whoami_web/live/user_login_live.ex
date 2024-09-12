@@ -32,8 +32,8 @@ defmodule WhoamiWeb.UserLoginLive do
         </:actions>
       </.simple_form>
       <div>
-        <.link href={Integrations.Discord.Api.authorize_url()}>
-          Sign in with Discord
+        <.link :for={provider <- Whoami.SSO.providers()} href={Whoami.SSO.sign_in_link(provider)}>
+          Sign in with <%= Whoami.SSO.name(provider) %>
         </.link>
       </div>
     </div>
